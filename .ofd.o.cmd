@@ -522,6 +522,16 @@ deps_/home/lym/projects/c_projects/dev_drivers/dd_primer/ofd.o := \
   include/linux/fcntl.h \
   /usr/src/linux-headers-3.0.0-32-generic/arch/x86/include/asm/fcntl.h \
   include/asm-generic/fcntl.h \
+  include/linux/device.h \
+    $(wildcard include/config/debug/devres.h) \
+    $(wildcard include/config/devtmpfs.h) \
+    $(wildcard include/config/sysfs/deprecated.h) \
+  include/linux/klist.h \
+  /usr/src/linux-headers-3.0.0-32-generic/arch/x86/include/asm/device.h \
+    $(wildcard include/config/dmar.h) \
+    $(wildcard include/config/amd/iommu.h) \
+  include/linux/pm_wakeup.h \
+  include/linux/cdev.h \
   /home/lym/kernel_src/devel/tools/lib/lockdep/uinclude/linux/kern_levels.h \
 
 /home/lym/projects/c_projects/dev_drivers/dd_primer/ofd.o: $(deps_/home/lym/projects/c_projects/dev_drivers/dd_primer/ofd.o)

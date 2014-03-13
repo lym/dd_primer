@@ -2,7 +2,7 @@
  * ofd.c - A hello world driver
  */
 
-#include <linux/kernel.h> /* printk defn */
+#include <linux/kernel.h>	/* printk defn */
 #include <linux/version.h>
 #include <linux/module.h>
 #include <linux/types.h>	/* dev_t defn */
@@ -10,8 +10,8 @@
 #include <linux/fs.h>		/* alloc_chrdev_region defn */
 #include <linux/device.h>
 #include <linux/cdev.h>		/* cdev_add and cdev_init */
+#include <linux/uaccess.h>	/* copy_to_user and copy_from_user */
 #include "/home/lym/kernel_src/devel/tools/lib/lockdep/uinclude/linux/kern_levels.h" /* defines the kernel log-levels */
-
 
 static dev_t first;		/* Global var. for first dev number */
 static struct cdev c_dev;	/* Global variable for the char device structure */
@@ -37,18 +37,34 @@ static int ofd_close(struct inode *i, struct file *filp)
  * Data Management
  */
 
+static char c;
+
 static ssize_t ofd_read(struct file *filp, char __user *buf, size_t len,
 		       loff_t *off)
 {
 	printk(KERN_INFO "Driver: read()\n");
-	return 0;
+	if (*off == 0) {
+		if (copy_to_user(buf, &c, 1) != 0)
+			return -EFAULT;
+		else {
+			(*off)++;
+			return 1;
+		}
+	}
+	else {
+		return 0;
+	}
 }
 
 static ssize_t ofd_write(struct file *filp, const char __user *buf,
 			 size_t len, loff_t *off)
 {
 	printk(KERN_INFO "Driver: write()\n");
-	return len;
+	if (copy_from_user(&c, buf + len - 1, 1) != 0)
+		return -EFAULT;
+	else
+		printk("%d", c);
+		return len;
 }
 
 /*

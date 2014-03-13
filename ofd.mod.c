@@ -27,6 +27,8 @@ __attribute__((section("__versions"))) = {
 	{ 0xf00fe4d0, "device_create" },
 	{ 0x34d03cd1, "__class_create" },
 	{ 0x29537c9e, "alloc_chrdev_region" },
+	{ 0x2f287f0d, "copy_to_user" },
+	{ 0x362ef408, "_copy_from_user" },
 	{ 0x50eedeb8, "printk" },
 	{ 0xb4390f9a, "mcount" },
 };
@@ -37,4 +39,4 @@ __attribute__((section(".modinfo"))) =
 "depends=";
 
 
-MODULE_INFO(srcversion, "6C8E1C73E65D14E1ED0A6D8");
+MODULE_INFO(srcversion, "F30B0F731D29891E5652D9C");

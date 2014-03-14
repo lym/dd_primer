@@ -11,7 +11,7 @@
 #include <linux/device.h>
 #include <linux/cdev.h>		/* cdev_add and cdev_init */
 #include <linux/uaccess.h>	/* copy_to_user and copy_from_user */
-#include "/home/lym/kernel_src/devel/tools/lib/lockdep/uinclude/linux/kern_levels.h" /* defines the kernel log-levels */
+//#include "/home/lym/kernel_src/devel/tools/lib/lockdep/uinclude/linux/kern_levels.h" /* defines the kernel log-levels */
 
 static dev_t first;		/* Global var. for first dev number */
 static struct cdev c_dev;	/* Global variable for the char device structure */
@@ -60,10 +60,10 @@ static ssize_t ofd_write(struct file *filp, const char __user *buf,
 			 size_t len, loff_t *off)
 {
 	printk(KERN_INFO "Driver: write()\n");
-	if (copy_from_user(&c, buf + len - 1, 1) != 0)
+	if (copy_from_user(&c, buf + (len - 1), 1) != 0)
 		return -EFAULT;
 	else
-		printk("%d", c);
+		printk("%s", &c);
 		return len;
 }
 

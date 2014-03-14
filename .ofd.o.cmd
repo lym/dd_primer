@@ -538,7 +538,6 @@ deps_/home/lym/projects/c_projects/dev_drivers/dd_primer/ofd.o := \
     $(wildcard include/config/x86/intel/usercopy.h) \
   /usr/src/linux-headers-3.0.0-32-generic/arch/x86/include/asm/uaccess_32.h \
     $(wildcard include/config/debug/strict/user/copy/checks.h) \
-  /home/lym/kernel_src/devel/tools/lib/lockdep/uinclude/linux/kern_levels.h \
 
 /home/lym/projects/c_projects/dev_drivers/dd_primer/ofd.o: $(deps_/home/lym/projects/c_projects/dev_drivers/dd_primer/ofd.o)
 

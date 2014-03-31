@@ -1,2 +1,3 @@
 kernel//home/lym/projects/c_projects/dev_drivers/dd_primer/ofd.ko
 kernel//home/lym/projects/c_projects/dev_drivers/dd_primer/mod_par.ko
+kernel//home/lym/projects/c_projects/dev_drivers/dd_primer/sleepy.ko

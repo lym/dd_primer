@@ -1,1 +1,0 @@
-cmd_/home/lym/projects/c_projects/dev_drivers/dd_primer/ofd.ko := ld -r -m elf_i386 -T /usr/src/linux-headers-3.0.0-32-generic/scripts/module-common.lds --build-id  -o /home/lym/projects/c_projects/dev_drivers/dd_primer/ofd.ko /home/lym/projects/c_projects/dev_drivers/dd_primer/ofd.o /home/lym/projects/c_projects/dev_drivers/dd_primer/ofd.mod.o

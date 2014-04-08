@@ -72,14 +72,21 @@ static ssize_t ofd_write(struct file *filp, const char __user *buf,
  */
 void timer_stuff(void)
 {
-	unsigned long j, stamp_1, stamp_half, stamp_n;
+	unsigned long j, k, stamp_1, stamp_half, stamp_n;
+	long elapsed, elapsed_msec;
 
 	j = jiffies;		/* read the current value */
 	stamp_1		= j + HZ;	/* 1 second in the future */
 	stamp_half	= j + (HZ / 2);	/* half a second */
 	stamp_n		= j + (HZ / 1000); /* n milliseconds */
 
-	printk(KERN_INFO "%d\n %d\n %d\n %d\n", j, stamp_1, stamp_half, stamp_n);
+	printk(KERN_INFO "%lu\n %lu\n %lu\n %lu\n", j, stamp_1, stamp_half, stamp_n);
+
+	k = jiffies;		/* read another value */
+	elapsed = (long) k - (long) j;
+	elapsed_msec	= elapsed * (1000 / HZ);
+	printk(KERN_INFO "%ld milliseconds elapsed since first read", elapsed_msec);
+
 }
 
 

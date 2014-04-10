@@ -1,3 +1,4 @@
 # Device Driver Primer (dd_primer)
 A couple of trivial code fragments containing one neophyte's experimentation
 with the linux kernel device driver interface.
+

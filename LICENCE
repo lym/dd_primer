@@ -1,3 +1,7 @@
 Some of the code fragments are adopted from the books am reading about the
 subject and this wonder wheel called the internet. Its all FOSS, though so
 feel free to tinker.
+
+Most of the code is adapted from "Linux Device Drivers" by Alessandro
+Rubini and Jonathan Corbet, published by O'Reilly & Associates. No warranty
+is attached.

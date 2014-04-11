@@ -14,13 +14,16 @@
 #include <linux/types.h>
 #include <linux/spinlock.h>
 #include <linux/interrupt.h>
+#include <linux/sched.h>	/* schedule() */
 
-#include <asm-generic/hardirq.h>
+#include <asm/hardirq.h>
 
 /*
  * This module is a silly one: it only embeds short code fragments that show
  * how time delays can be handled in the kernel.
  */
+
+int jit_nr_devs = 5;	/* Temporary fix; determines no. of lines return by `cat` */
 
 int delay = HZ;		/* the default delay, expressed in jiffies */
 
@@ -37,6 +40,71 @@ enum jit_files {
 	JIT_SCHEDTO
 };
 
+/*
+ * /proc fs stuff : using seq_file
+ */
+
+/* The sequence iteration methods */
+static void *jit_seq_start(struct seq_file *s, loff_t *pos)
+{
+	if (*pos >= jit_nr_devs)
+		return NULL;
+	return jit_nr_devs + *pos;
+}
+
+static void *jit_seq_next(struct seq_file *s, void *v, loff_t *pos)
+{
+	if (++(*pos) >= jit_nr_devs)
+		return NULL;
+	return jit_nr_devs + *pos;
+}
+
+static void jit_seq_stop(struct seq_file *s, void *v)
+{
+}
+
+static int jit_seq_show(struct seq_file *s, void *v)
+{
+	seq_printf(s, "Jit Proc File Operational\n");
+	return 0;
+}
+
+/* build up the seq_ops structure */
+static struct seq_operations jit_seq_ops = {
+	.start	= jit_seq_start,
+	.next	= jit_seq_next,
+	.stop	= jit_seq_stop,
+	.show	= jit_seq_show
+};
+
+/* the open() method that connects the /proc file the the seq_ops */
+static int jit_proc_open(struct inode *inode, struct file *file)
+{
+	return seq_open(file, &jit_seq_ops);
+}
+
+/* Initialize a fops structure for the /proc file. Required by the seq_file
+ * interface. We only are concerned about the open() method
+ */
+
+static struct file_operations jit_proc_ops = {
+	.owner		= THIS_MODULE,
+	.open		= jit_proc_open,
+	.read		= seq_read,
+	.llseek		= seq_lseek,
+	.release	= seq_release
+};
+
+static void jit_create_proc(void)
+{
+	struct proc_dir_entry *entry;
+	entry = proc_create_data("jitseq", 0, NULL, &jit_proc_ops, NULL);
+}
+
+static void jit_remove_proc(void)
+{
+	remove_proc_entry("jitseq", NULL);
+}
 /*
  * This function prints one line of data, after sleeping one second. It can
  * sleep in different ways, according to the data pointer
@@ -78,7 +146,7 @@ int jit_fn(char *buf, char **start, off_t offset, int len, int *eof, void *data)
 /*
  * This file, on the other hand, returns the current time forever
  */
-int jit_current_time(char *buf, char **start, off_t offset, int len, int *eof,
+int jit_currenttime(char *buf, char **start, off_t offset, int len, int *eof,
 		void *data)
 {
 	struct timeval tv1;
@@ -126,7 +194,7 @@ void jit_timer_fn(unsigned long arg)
 	unsigned long j = jiffies;
 	data->buf += sprintf(data->buf, "%9li %3li %i %6i %i %s\n", j,
 			     j - data->prev_jiffies, in_interrupt() ? 1 : 0,
-			     current_pid(), smp_processor_id(), current->comm);
+			     current->pid, smp_processor_id(), current->comm);
 
 	if (--data->loops) {
 		data->timer.expires += tdelay;
@@ -156,7 +224,7 @@ int jit_timer(char *buf, char **start, off_t offset, int len, int *eof,
 	/* write the first lines in the buffer */
 	buf2 += sprintf(buf2, " time	delta	inirq	pid	cpu	command\n");
 	buf2 += sprintf(buf2, "%9li	%3li	%i	%6i	%i	%s\n",
-			j, 0L, in_interrupt() ? 1 : 0, current_pid(),
+			j, 0L, in_interrupt() ? 1 : 0, current->pid,
 			smp_processor_id(), current->comm);
 
 	/* fill the data for our timer function */
@@ -186,7 +254,7 @@ void jit_tasklet_fn(unsigned long arg)
 	unsigned long j = jiffies;
 	data->buf += sprintf(data->buf, "%9li	%3li	%i	%6i	%i	%s\n",
 			     j, j - data->prev_jiffies, in_interrupt() ? 1 : 0,
-			     current_pid(), smp_processor_id(), current->comm);
+			     current->pid, smp_processor_id(), current->comm);
 
 	if (--data->loops) {
 		data->prev_jiffies = j;
@@ -207,7 +275,7 @@ int jit_tasklet(char *buf, char **start, off_t offset, int len, int *eof,
 	struct jit_data *data;
 	char *buf2 = buf;
 	unsigned long j = jiffies;
-	ling hi = (long) arg;
+	long hi = (long) arg;
 
 	data = kmalloc(sizeof(*data), GFP_KERNEL);
 	if (!data)
@@ -218,7 +286,7 @@ int jit_tasklet(char *buf, char **start, off_t offset, int len, int *eof,
 	/* write the first lines in the buffer */
 	buf2 += sprintf(buf2, "	time	delta	inirq	pid	cpu	command\n");
 	buf2 += sprintf(buf2, "	%9li	%3li	%i	%6i	%i	%s\n",
-			j, 0L, in_interrupt() ? 1 : 0, current_pid(),
+			j, 0L, in_interrupt() ? 1 : 0, current->pid,
 			smp_processor_id(), current->comm);
 
 	/* fill the data for our tasklet function */
@@ -227,8 +295,8 @@ int jit_tasklet(char *buf, char **start, off_t offset, int len, int *eof,
 	data->loops	= JIT_ASYNC_LOOPS;
 
 	/* register the tasklet */
-	tasklet_init(%data->tlet, jit_tasklet_fn, (unsigned long) data);
-	data->hi = ji;
+	tasklet_init(&data->tlet, jit_tasklet_fn, (unsigned long) data);
+	data->hi = hi;
 	if (hi)
 		tasklet_hi_schedule(&data->tlet);
 	else
@@ -247,7 +315,7 @@ int jit_tasklet(char *buf, char **start, off_t offset, int len, int *eof,
 
 int __init jit_init(void)
 {
-	create_proc_read_entry("currenttime", 0, NULL, jit_currenttime, NULL);
+	/*create_proc_read_entry("currenttime", 0, NULL, jit_currenttime, NULL);
 	create_proc_read_entry("jitbusy", 0, NULL, jit_fn, (void *)JIT_BUSY);
 	create_proc_read_entry("jitsched",0, NULL, jit_fn, (void *)JIT_SCHED);
 	create_proc_read_entry("jitqueue",0, NULL, jit_fn, (void *)JIT_QUEUE);
@@ -256,13 +324,15 @@ int __init jit_init(void)
 	create_proc_read_entry("jittimer", 0, NULL, jit_timer, NULL);
 	create_proc_read_entry("jittasklet", 0, NULL, jit_tasklet, NULL);
 	create_proc_read_entry("jittasklethi", 0, NULL, jit_tasklet, (void *)1);
+	*/
+	jit_create_proc();
 
 	return 0; /* success */
 }
 
 void __exit jit_cleanup(void)
 {
-	remove_proc_entry("currenttime", NULL);
+	/*remove_proc_entry("currenttime", NULL);
 	remove_proc_entry("jitbusy", NULL);
 	remove_proc_entry("jitsched", NULL);
 	remove_proc_entry("jitqueue", NULL);
@@ -270,6 +340,8 @@ void __exit jit_cleanup(void)
 	remove_proc_entry("jittimer", NULL);
 	remove_proc_entry("jittasklet", NULL);
 	remove_proc_entry("jittasklet_hi", NULL);
+	*/
+	jit_remove_proc();
 }
 
 module_init(jit_init);

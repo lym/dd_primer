@@ -24,8 +24,7 @@
  */
 
 int jit_nr_devs = 5;	/* Temporary fix; determines no. of lines return by `cat` */
-
-int delay = HZ;		/* the default delay, expressed in jiffies */
+int delay	= HZ;		/* the default delay, expressed in jiffies */
 
 module_param(delay, int, 0);
 

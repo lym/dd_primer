@@ -1,8 +1,8 @@
 /*
- * jit_busy.c -- delay execution, using the "busy waiting" approach
+ * jit_sched.c -- Another approach to delaying execution.
  *
- * /proc/jit_busy delays a whole second each time one reads a line of text
- * and the lines are guaranteed to be 20 bytes each.
+ * This one explicitly releases the processor, by calling the schedule,
+ * rather than busy waiting, as the jit_busy module does.
  */
 
 #include <linux/module.h>
@@ -21,7 +21,7 @@
 
 #include <asm/hardirq.h>
 
-int jbusy_nr_lines	= 5;	/* Temporary fix; determines no. of lines return by `cat` */
+int jit_sched_lines	= 5;	/* Temporary fix; determines no. of lines return by `cat` */
 int delay		= HZ;	/* the default delay, expressed in jiffies */
 
 module_param(delay, int, 0);
@@ -36,16 +36,16 @@ MODULE_LICENSE("GPL");
 /* The sequence iteration methods */
 static void *jit_seq_start(struct seq_file *s, loff_t *pos)
 {
-	if (*pos >= jbusy_nr_lines)
+	if (*pos >= jit_sched_lines)
 		return NULL;
-	return jbusy_nr_lines + *pos;
+	return jit_sched_lines + *pos;
 }
 
 static void *jit_seq_next(struct seq_file *s, void *v, loff_t *pos)
 {
-	if (++(*pos) >= jbusy_nr_lines)
+	if (++(*pos) >= jit_sched_lines)
 		return NULL;
-	return jbusy_nr_lines + *pos;
+	return jit_sched_lines + *pos;
 }
 
 static void jit_seq_stop(struct seq_file *s, void *v)
@@ -60,7 +60,7 @@ static int jit_seq_show(struct seq_file *s, void *v)
 	j1 = j0 + delay;
 
 	while (time_before(jiffies, j1))
-		cpu_relax();
+		schedule();
 	j1 = jiffies;	/* value after we delayed */
 	seq_printf(s, "%9li %9li\n", j0, j1);
 
@@ -96,12 +96,12 @@ static struct file_operations jit_proc_ops = {
 static void jit_create_proc(void)
 {
 	struct proc_dir_entry *entry;
-	entry = proc_create_data("jit_busy", 0, NULL, &jit_proc_ops, NULL);
+	entry = proc_create_data("jit_sched", 0, NULL, &jit_proc_ops, NULL);
 }
 
 static void jit_remove_proc(void)
 {
-	remove_proc_entry("jit_busy", NULL);
+	remove_proc_entry("jit_sched", NULL);
 }
 
 int __init jit_init(void)

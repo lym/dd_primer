@@ -4,7 +4,7 @@
 # system and can use its language.
 ifneq (${KERNELRELEASE},)
 	obj-m := ofd.o mod_par.o sleepy.o jiffies_test.o jit.o jit_cur_time.o \
-		jit_busy.o jit_sched.o
+		jit_busy.o jit_sched.o jit_queue.o jit_timer.o kertimer.o
 # Otherwise we were called directly from the command line.
 # Invoke the kernel build system.
 else

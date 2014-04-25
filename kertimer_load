@@ -1,0 +1,21 @@
+#!/bin/sh
+
+module="kertimer"
+device="kertimer"
+mode="go+rw"
+cf_path="/dev/kertimer"
+
+# Invoke insmod with all arguments we got and use a pathname as
+# insmod doesn't look in . by default
+/sbin/insmod ./$module.ko $* || exit 1
+
+# sudo insmod kertimer.ko
+
+chmod $mode $cf_path
+# sudo chmod go+rw /dev/kertimer
+
+# echo -n "stranD" > /dev/kertimer
+
+# cat /dev/kertimer
+
+# dmesg | tail -15

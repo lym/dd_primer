@@ -5,7 +5,7 @@
 ifneq (${KERNELRELEASE},)
 	obj-m := ofd.o mod_par.o sleepy.o jiffies_test.o jit.o jit_cur_time.o \
 		jit_busy.o jit_sched.o jit_queue.o jit_timer.o kertimer.o 					\
-		jit_tasklet.o
+		jit_tasklet.o playground.o vid_ram_ex.o
 # Otherwise we were called directly from the command line.
 # Invoke the kernel build system.
 else
@@ -13,7 +13,7 @@ else
 	KERNEL_SOURCE := /lib/modules/3.15.0-rc2-next-20140424/build/
 	PWD := $(shell pwd)
 default:
-	${MAKE} -C ${KERNEL_SOURCE} SUBDIRS=${PWD} modules
+	${MAKE} -C ${KERNEL_SOURCE} M=${PWD} modules
 clean:
-	${MAKE} -C ${KERNEL_SOURCE} SUBDIRS=${PWD} clean
+	${MAKE} -C ${KERNEL_SOURCE} M=${PWD} clean
 endif
